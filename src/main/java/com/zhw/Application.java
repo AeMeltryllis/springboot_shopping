@@ -1,13 +1,11 @@
-package com.zhw.graduation_project;
+package com.zhw;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class GraduationProjectApplication {
-
+public class Application {
     public static void main(String[] args) {
-        SpringApplication.run(GraduationProjectApplication.class, args);
+        SpringApplication.run(Application.class, args);
     }
-
 }
