@@ -35,6 +35,7 @@ div.pageDiv{
 }
 div.listDataTableDiv{
 	min-height:220px;
+	padding: 10px;
 }
 div.footer{
 	margin:20px;
