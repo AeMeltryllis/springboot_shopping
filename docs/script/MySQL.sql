@@ -109,6 +109,10 @@ CREATE TABLE order_item (
   PRIMARY KEY (id)
 ) ENGINE=InnoDB  DEFAULT CHARSET=utf8;
 
+-- 2019/12/25 为category数据表增加逻辑删除
+
+alter table category_info ADD  COLUMN is_deleted bit(1) DEFAULT NULL COMMENT '逻辑删除标记';
+
 
 
 

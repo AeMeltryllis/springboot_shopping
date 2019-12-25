@@ -1,4 +1,4 @@
-package com.zhw.util;
+package com.zhw.xxo;
 
 import java.io.Serializable;
 import java.util.Map;
@@ -9,7 +9,8 @@ public class DataVO implements Serializable {
     private String msg;
     private Map<String, Object> map;
 
-    DataVO() {
+    public DataVO() {
+        this.msg=" ";
 
     }
 

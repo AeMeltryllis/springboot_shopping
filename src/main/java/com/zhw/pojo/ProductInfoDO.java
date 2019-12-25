@@ -9,14 +9,14 @@ import org.hibernate.annotations.DynamicUpdate;
 
 
 @Entity
-@Table(name = "category_info")
+@Table(name = "product_info")
 @DynamicInsert
 @DynamicUpdate
 
 
-public class CategoryInfoPO  implements Serializable {
-@Id
-@GeneratedValue(strategy = GenerationType.IDENTITY)
+public class ProductInfoDO  implements Serializable {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	@Column(name="id")
 	private Integer id;
 	@Column(name="create_time")
@@ -26,21 +26,22 @@ public class CategoryInfoPO  implements Serializable {
 	@Column(name="update_time")
 	@JsonFormat(pattern="yyyy-MM-dd",timezone = "GMT+8")
 	@DateTimeFormat(pattern = "yyyy-MM-dd")
-
 	private Date updateTime;
 	@Column(name="name")
 	private String name;
-	/*逻辑删除标记*/
-	@Column(name="is_deleted")
-	private Boolean deleted;
-
-	public Boolean getDeleted() {
-		return deleted;
-	}
-
-	public void setDeleted(Boolean deleted) {
-		this.deleted = deleted;
-	}
+	@Column(name="sub_title")
+	private String subTitle;
+	/*原始价格*/
+	@Column(name="original_price")
+	private Double originalPrice;
+	/*优惠价格*/
+	@Column(name="promote_price")
+	private Double promotePrice;
+	/*库存*/
+	@Column(name="stock")
+	private Integer stock;
+	@Column(name="category_id")
+	private Integer categoryId;
 
 	public Integer getId() {
 		return id;
@@ -74,6 +75,44 @@ public class CategoryInfoPO  implements Serializable {
 		this.name = name;
 	}
 
+	public String getSubTitle() {
+		return subTitle;
+	}
 
+	public void setSubTitle(String subTitle) {
+		this.subTitle = subTitle;
+	}
+
+	public Double getOriginalPrice() {
+		return originalPrice;
+	}
+
+	public void setOriginalPrice(Double originalPrice) {
+		this.originalPrice = originalPrice;
+	}
+
+	public Double getPromotePrice() {
+		return promotePrice;
+	}
+
+	public void setPromotePrice(Double promotePrice) {
+		this.promotePrice = promotePrice;
+	}
+
+	public Integer getStock() {
+		return stock;
+	}
+
+	public void setStock(Integer stock) {
+		this.stock = stock;
+	}
+
+	public Integer getCategoryId() {
+		return categoryId;
+	}
+
+	public void setCategoryId(Integer categoryId) {
+		this.categoryId = categoryId;
+	}
 
 }
