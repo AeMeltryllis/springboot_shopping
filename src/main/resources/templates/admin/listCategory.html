@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
-<head th:include="admin/header::html('分类管理')">
+<head th:include="common/header::html('分类管理')">
     <meta charset="UTF-8">
     <title>商品分类</title>
 </head>
@@ -30,6 +30,7 @@
             <tr v-for="item in categoryList">
                 <td>{{item.id}}</td>
                 <td>
+<!--                    图片-->
                 <img height="40px"  :src="'img/category/'+item.id+'.jpg'">
 
                 </td>
@@ -45,7 +46,8 @@
                             class="glyphicon glyphicon-shopping-cart"></span></a>
                 </td>
                 <td>
-                    <a :href="'admin_category_edit?id=' + item.id "><span class="glyphicon glyphicon-edit"></span></a>
+<!--                    编辑块-->
+                    <a href="#nowhere" @click="edit(item)"><span class="glyphicon glyphicon-edit"></span></a>
                 </td>
                 <td>
                     <a href="#nowhere" @click="deleteBean(item.id)"><span class="glyphicon glyphicon-trash"></span></a>
@@ -112,14 +114,25 @@
             });
         },
         methods: {
+            edit(item){
+                layer.open({
+                    type: 2,
+                    title:false,
+                    closeBtn: 2,
+                    shade: [0],
+                    area: ['500px', '300px'],
+                    anim: 2,
+                    content: ['/zhw/editCategory?id='+item.id, 'no'],
+                    end: function(){
+                        vm.pageCategory(1);
+                    }
+                })
+            }
+            ,
             deleteBean(id){
                 $.ajax({
                     type:"delete",
-                    url:'category/'+id,
-                    data:{
-                        // _method:'DELETE'
-                    },
-                    // dataType: 'json',
+                    url:'/zhw/category/'+id,
                     success:function (res) {
                         alert(res.msg);
                         vm.pageCategory(1);
@@ -128,9 +141,7 @@
 
             },
             uploadFile(file){
-                console.log(file);
                 vm.file = file.target.files[0];
-                console.log(vm.file);
             },
             add(){
                 if (!checkEmpty(vm.categoryBean.name,'分类名称')){return}
@@ -138,7 +149,7 @@
                 //使用fromData格式来上传图片等信息
                 var formData=new FormData;
                 formData.append("image",vm.file)
-                formData.append("name",vm.categoryBean.name)
+                formData.append("bean",vm.categoryBean)
                 var url='category';
                     $.ajax({
                         type:'POST',
@@ -150,13 +161,6 @@
                             vm.pageCategory(1);
                         }
                     });
-                // axios.post(url,formData,config).then(function(res){
-                //     console.config(config);
-                //     vm.pageCategory(1);
-                //     vm.categoryBean = {};
-                //     $("#categoryPic").val('');
-                //     vm.file = null;
-                // });
             }
             ,
             changeCurretnIndex(curretnIndex) {
@@ -178,15 +182,6 @@
                         vm.categoryList = res.data.content;
                     }
                 });
-                // axios.get(url, {
-                //     params: {
-                //         pageIndex: index,
-                //         size: vm.pageSize
-                //     }
-                // }).then(function (res) {
-                //     var data = res.data;
-                //     vm.categoryList = data.data.content;
-                // });
             },
             listCategory() {
                 var url = 'categoryList'

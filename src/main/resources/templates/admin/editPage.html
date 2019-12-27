@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <head th:include="common/header::html('分类管理')">
+        <meta charset="UTF-8">
+    </head>
+    <style>
+        #editPage{
+            top: -70px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+<div id="editPage">
+    <ol class="breadcrumb">
+        <li class="active">编辑分类</li>
+    </ol>
+    <div class="panel panel-warning editDiv">
+        <div class="panel-heading">编辑分类</div>
+        <div class="panel-body">
+            <table class="addTable">
+                <tr>
+                    <td>分类名称</td>
+                    <td><input  @keyup.enter="" v-model.trim="categoryBean.name" type="text" class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>分类图片</td>
+                    <td>
+                        <input id="categoryPic" accept="image/*" type="file" name="image" @change="uploadFile($event)" />
+                    </td>
+                </tr>
+                <tr class="submitTR">
+                    <td colspan="2" align="center">
+                        <a href="#nowhere"  @click="update" class="btn btn-success">修改</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    var vm = new Vue({
+        el: '#editPage',
+        data: {
+            //thymleaf 将model数据设进<script>的写法
+            id:[[${id}]],
+            categoryBean:{
+                name:'',
+                id:[[${id}]]
+            },
+            categoryList: [], //请求回来的categoryList
+            file: null  //上传的文件
+        },
+        mounted: function () {
+            this.$nextTick(function () {
+
+            });
+        },
+        methods: {
+            uploadFile(file){
+                vm.file = file.target.files[0];
+            },
+            update(){
+                    if (!checkEmpty(vm.categoryBean.name,'分类名称')){return}
+                    if (!checkEmpty(vm.file,'上传文件')){return}
+                    //使用fromData格式来上传图片等信息
+                    var formData=new FormData;
+                    formData.append("image",vm.file)
+                    formData.append("bean",vm.categoryBean)
+                    var url='category';
+                    $.ajax({
+                        type:'POST',
+                        processData: false,
+                        contentType: false,
+                        url:url,
+                        data:formData,
+                        success:function (res) {
+                            var index = parent.layer.getFrameIndex(window.name);
+                            parent.layer.close(index);//关闭当前页
+                        }
+                    });
+                }
+            }
+
+
+
+    });
+</script>
+</html>

@@ -4,6 +4,7 @@ import com.zhw.pojo.CategoryInfoPO;
 import com.zhw.service.ICommonService;
 import com.zhw.xxo.DataVO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,11 +22,11 @@ public class DataController {
     }
 
     @PostMapping(value = "/category")
-    public DataVO saveCategory(CategoryInfoPO bean, @RequestParam("image") MultipartFile image,HttpServletRequest request){
+    public DataVO saveCategory(@RequestParam("bean")CategoryInfoPO bean, @RequestParam("image") MultipartFile image,HttpServletRequest request){
         try {
             bean.setCreateTime(new Date());
-            Integer POId = iCommonService.addCategory(bean);
-            iCommonService.saveImage(POId,image,request);
+            Integer POId = iCommonService.saveOrUpdateCategory(bean);
+            iCommonService.saveImage(POId,image);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -37,7 +38,7 @@ public class DataController {
         return new DataVO(iCommonService.listCategory());
     }
 
-    @GetMapping(value = "/categoryPage")
+    @GetMapping( "/categoryPage")
     public DataVO getCategoryPage(int pageIndex,int size){
         return new DataVO(iCommonService.pageCategory(pageIndex,size));
     }

@@ -1,6 +1,6 @@
 -- 创建数据库
-DROP DATABASE IF EXISTS graduation_project;
-CREATE DATABASE graduation_project DEFAULT CHARACTER SET utf8;
+# DROP DATABASE IF EXISTS graduation_project;
+# CREATE DATABASE graduation_project DEFAULT CHARACTER SET utf8;
 -- 创建用户表
 CREATE TABLE user_info (
   id bigint(11) NOT NULL AUTO_INCREMENT,
