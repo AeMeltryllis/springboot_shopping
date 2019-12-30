@@ -68,7 +68,9 @@
                     //使用fromData格式来上传图片等信息
                     var formData=new FormData;
                     formData.append("image",vm.file)
-                    formData.append("bean",vm.categoryBean)
+                //需要把表单数据一个个append进入，如何实现直接将一个vue中的实体类对象append后仍然能让controller接收是个要解决的问题
+                    formData.append("name",vm.categoryBean.name)
+                    formData.append("id",vm.id)//append id
                     var url='category';
                     $.ajax({
                         type:'POST',

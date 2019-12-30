@@ -5,8 +5,7 @@
     <title>商品分类</title>
 </head>
 <body>
-<div th:replace="admin/navigator::html"></div>
-
+<div th:replace="admin/category/navigator::html"></div>
 <div id="app">
     <h1 class="label label-info" style="left: 11px; position: relative;">分类管理</h1>
     <br>
@@ -38,7 +37,7 @@
                     {{item.name}}
                 </td>
                 <td>
-                    <a :href="'admin_property_list?cid=' + item.id "><span
+                    <a :href="'propertyList?categoryId=' + item.id "><span
                             class="glyphicon glyphicon-th-list"></span></a>
                 </td>
                 <td>
@@ -50,6 +49,7 @@
                     <a href="#nowhere" @click="edit(item)"><span class="glyphicon glyphicon-edit"></span></a>
                 </td>
                 <td>
+<!--                    删除块-->
                     <a href="#nowhere" @click="deleteBean(item.id)"><span class="glyphicon glyphicon-trash"></span></a>
                 </td>
             </tr>
@@ -91,15 +91,15 @@
         </div>
     </div>
 </div>
-<div th:replace="admin/footer::html"></div>
+<div th:replace="admin/category/footer::html"></div>
 </body>
 <script>
     var vm = new Vue({
         el: '#app',
         data: {
             categoryBean:{
-                name:'',
-                id:0
+                id:0,
+                name:''
             },
             categoryList: [], //请求回来的categoryList
             pageIndex: 1, //分页的当前页数
@@ -108,10 +108,11 @@
 
         },
         mounted: function () {
-            this.$nextTick(function () {
+            this.$nextTick(
+                function () {
                 vm.pageCategory(1);
-
-            });
+            }
+            );
         },
         methods: {
             edit(item){
@@ -132,7 +133,7 @@
             deleteBean(id){
                 $.ajax({
                     type:"delete",
-                    url:'/zhw/category/'+id,
+                    url:'category/'+id,
                     success:function (res) {
                         alert(res.msg);
                         vm.pageCategory(1);
@@ -148,13 +149,16 @@
                 if (!checkEmpty(vm.file,'上传文件')){return}
                 //使用fromData格式来上传图片等信息
                 var formData=new FormData;
-                formData.append("image",vm.file)
-                formData.append("bean",vm.categoryBean)
+                formData.append("image",vm.file);
+                // formData.append("categoryBean",JSON.stringify(vm.categoryBean));
+
+                formData.append("name",vm.categoryBean.name);
                 var url='category';
                     $.ajax({
                         type:'POST',
-                        processData: false,
-                        contentType: false,
+                        processData: false,//必须false才会避开jQuery对 formdata 的默认处理
+                        contentType: false,//必须false才会自动加上正确的Content-Type
+                        cache: false,//关闭缓存
                         url:url,
                         data:formData,
                         success:function (res) {

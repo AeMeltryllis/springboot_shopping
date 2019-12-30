@@ -1,7 +1,9 @@
 package com.zhw.service.Impl;
 
 import com.zhw.dao.ICategoryDO;
+import com.zhw.dao.IPropertyDO;
 import com.zhw.pojo.CategoryInfoPO;
+import com.zhw.pojo.PropertyPO;
 import com.zhw.service.ICommonService;
 import com.zhw.util.ImageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +34,8 @@ public class CommonService implements ICommonService {
 
     @Autowired
     ICategoryDO iCategoryDO;
+    @Autowired
+    IPropertyDO iPropertyDO;
 
     @Override
     public List<CategoryInfoPO> listCategory() {
@@ -44,7 +48,12 @@ public class CommonService implements ICommonService {
         return iCategoryDO.getById(id);
     }
 
-
+    /**
+     * 分类页的分类方法
+     * @param pageIndex
+     * @param size
+     * @return
+     */
     @Override
     public Page pageCategory(int pageIndex, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -58,31 +67,34 @@ public class CommonService implements ICommonService {
 
     /**
      * 保存分类
+     *
      * @param category
      * @return
      */
     @Override
     public Integer saveOrUpdateCategory(CategoryInfoPO category) {
-        if (category.getId()!=null){
+        if (category.getId() != null) {
             CategoryInfoPO pCategoryPO = iCategoryDO.getById(category.getId());
-            if (pCategoryPO!=null){  //进入这里代表数据库有这条数据
+            if (pCategoryPO != null) {
+                //进入这里代表数据库有这条数据
                 pCategoryPO.setUpdateTime(new Date());
                 pCategoryPO.setName(category.getName());
                 CategoryInfoPO PO = iCategoryDO.save(pCategoryPO);
                 return PO.getId();
             }
-        }else {
+        } else {
             category.setDeleted(false);
             CategoryInfoPO PO = iCategoryDO.save(category);
             return PO.getId();
         }
         return null;
     }
+
     @Override
     public void saveImage(Integer categoryId, MultipartFile image) throws IOException {
         //这里获取的是targe
-        String rootPath = ResourceUtils.getURL("classpath:static").getPath().replace("%20"," ").replace('/', '\\');
-        File imagePath = new File(rootPath,"img/category");
+        String rootPath = ResourceUtils.getURL("classpath:static").getPath().replace("%20", " ").replace('/', '\\');
+        File imagePath = new File(rootPath, "img/category");
         File file = new File(imagePath.getAbsolutePath(), categoryId + ".jpg");
         if (!file.getParentFile().exists())
             file.getParentFile().mkdirs();
@@ -92,6 +104,7 @@ public class CommonService implements ICommonService {
         //将流写入
         ImageIO.write(img, ".jpg", file);
     }
+
     /**
      * 虽然叫删除，但是使用的是逻辑删除
      *
@@ -105,8 +118,34 @@ public class CommonService implements ICommonService {
             tCategoryPO.setDeleted(true);
             iCategoryDO.save(tCategoryPO);
         } else {
-            System.out.println("哦哦");
         }
 
+    }
+
+    /**
+     * 根据分类id获取分类属性列表
+     *
+     * @return
+     */
+    @Override
+    public Page<PropertyPO> pageProperty(int categoryId,int pageIndex,int size) {
+        CategoryInfoPO categoryPO = iCategoryDO.getById(categoryId);
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        //Page类中的下标是从0开始，所以穿进来的pageIndex要-1
+        Pageable page = PageRequest.of(pageIndex - 1, size, sort);
+        Page<PropertyPO> byCategoryInfoPO = iPropertyDO.findByCategoryInfoPO(categoryPO, page);
+        return byCategoryInfoPO;
+    }
+
+    @Override
+    public Integer saveProperty(PropertyPO propertyPO){
+        propertyPO.setCreateTime(new Date());
+        PropertyPO save = iPropertyDO.save(propertyPO);
+        return save.getId();
+    }
+
+    @Override
+    public void deleteProperty(PropertyPO propertyPO){
+        iPropertyDO.delete(propertyPO);
     }
 }

@@ -20,15 +20,22 @@ public class PageController {
 
     @GetMapping("/listCategory")
     public String listCategory(){
-        return "admin/listCategory";
+        return "admin/category/listCategory";
     }
 
     @GetMapping("/editCategory")
     public String editCategory(Model model,@RequestParam("id") int id ){
         model.addAttribute("id",id);
         //return "redirect:admin/listCategory";
-        return "admin/editPage";
+        return "admin/category/editPage";
     }
+    //转跳到属性页
+    @GetMapping("/propertyList")
+    public String goProperty(Model model,@RequestParam("categoryId") int categoryId ){
+        model.addAttribute("id",categoryId);
+        return "admin/property/listProperty";
+    }
+
 
 
 }
