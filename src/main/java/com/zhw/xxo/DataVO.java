@@ -10,7 +10,7 @@ public class DataVO implements Serializable {
     private Map<String, Object> map;
 
     public DataVO() {
-        this.msg=" ";
+        this.msg = " ";
 
     }
 
@@ -21,6 +21,7 @@ public class DataVO implements Serializable {
     public void setMsg(String msg) {
         this.msg = msg;
     }
+
     public DataVO(Object data) {
         this.success = true;
         this.data = data;
@@ -33,12 +34,17 @@ public class DataVO implements Serializable {
         this.msg = message;
     }
 
+    public DataVO(Object data, Map<String, Object> map, String message) {
+        this.success = true;
+        this.data = data;
+        this.map = map;
+        this.msg = message;
+    }
 
     public void setFailMsg(String msg) {
         this.msg = msg;
         this.success = false;
     }
-
 
     public boolean isSuccess() {
         return success;

@@ -3,12 +3,7 @@ package com.zhw.controller;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-
-
-import javax.servlet.http.HttpServletRequest;
 
 @Controller
 public class PageController {
@@ -35,7 +30,17 @@ public class PageController {
         model.addAttribute("id",categoryId);
         return "admin/property/listProperty";
     }
+    //转跳到属性编辑页
+    @GetMapping("/editProperty")
+    public String goPropertyEdit(Model model,@RequestParam("id") int propertyId ){
+        model.addAttribute("id",propertyId);
+        return "admin/property/editPage";
+    }
 
-
-
+    //转跳到产品页
+    @GetMapping("/productList")
+    public String goProductList(Model model,@RequestParam("categoryId") int categoryId){
+        model.addAttribute("id",categoryId);
+        return "admin/product/listProduct";
+    }
 }

@@ -1,6 +1,7 @@
 package com.zhw.service;
 
 import com.zhw.pojo.CategoryInfoPO;
+import com.zhw.pojo.ProductPO;
 import com.zhw.pojo.PropertyPO;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
@@ -33,8 +34,20 @@ public interface ICommonService {
      */
     Page<PropertyPO> pageProperty(int categoryId, int pageIndex, int size);
 
-    Integer saveProperty(PropertyPO propertyPO);
+    Integer saveAndUpdateProperty(PropertyPO propertyPO);
 
     void deleteProperty(PropertyPO propertyPO);
+
+    PropertyPO getProperty(int id);
+
+    Integer saveAndUpdateProduct(ProductPO productPO);
+
+    ProductPO getProduct(int id);
+
+    Page pageProduct(int categoryId,int pageIndex, int size);
+
+    void deleteProduct(int id);
+
+
 
 }

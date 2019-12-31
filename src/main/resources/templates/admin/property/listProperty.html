@@ -6,11 +6,11 @@
 <body>
 <div th:replace="admin/category/navigator::html"></div>
 <div id="app">
-<!--    <ol class="breadcrumb">-->
-<!--        <li><a href="">所有分类</a></li>-->
-<!--        <li><a :href="'propertyPage?id='+categoryBean.id">{{categoryBean.name}}</a></li>-->
-<!--        <li class="active">属性管理</li>-->
-<!--    </ol>-->
+    <ol class="breadcrumb">
+        <li><a href="listCategory">所有分类</a></li>
+        <li><a :href="'propertyList?categoryId='+categoryBean.id">{{categoryBean.name}}</a></li>
+        <li class="active">属性管理</li>
+    </ol>
     <div class="listDataTableDiv">
         <table class="table table-striped table-bordered table-hover  table-condensed">
             <thead>
@@ -28,7 +28,7 @@
                     {{item.name}}
                 </td>
                 <td>
-                    <a href="#nowhere" @click="deleteProperty(item.id)" ><span class="glyphicon glyphicon-edit"></span></a>
+                    <a href="#nowhere" @click="editProperty(item.id)" ><span class="glyphicon glyphicon-edit"></span></a>
                 </td>
                 <td>
                     <a href="#nowhere" @click="deleteProperty(item.id)" ><span  class="glyphicon glyphicon-trash"></span></a>
@@ -94,11 +94,26 @@
                 });
         },
         methods: {
+            editProperty(id){
+                layer.open({
+                    type: 2,
+                    title:false,
+                    closeBtn: 2,
+                    shade: [0],
+                    area: ['500px', '300px'],
+                    anim: 2,
+                    content: ['editProperty?id='+id, 'no'],
+                    end: function(){
+                        vm.pageProperty(1);
+                    }
+                })
+            },
             deleteProperty(id){
                 $.ajax({
                     type:'delete',
                     url:'property/'+id,
                     success:function (res) {
+                        alert(res.msg);
                         vm.pageProperty(1);
                     }
                 });

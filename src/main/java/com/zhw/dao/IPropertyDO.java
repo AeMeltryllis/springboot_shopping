@@ -8,4 +8,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface IPropertyDO extends JpaRepository<PropertyPO,Integer> {
     Page<PropertyPO> findByCategoryInfoPO(CategoryInfoPO categoryPO, Pageable pageable);
+
 }

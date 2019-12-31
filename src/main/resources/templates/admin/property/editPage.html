@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <head th:include="common/header::html('分类管理')">
+        <meta charset="UTF-8">
+    </head>
+    <style>
+        #editPage{
+            top: -70px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+<div id="editPage">
+    <ol class="breadcrumb">
+        <li class="active">编辑属性</li>
+    </ol>
+    <div class="panel panel-warning editDiv">
+        <div class="panel-heading">编辑属性</div>
+        <div class="panel-body">
+            <table class="addTable">
+                <tr>
+                    <td>属性名称</td>
+                    <td><input  v-model.trim="property.name" type="text" class="form-control"></td>
+                </tr>
+                <tr class="submitTR">
+                    <td colspan="2" align="center">
+                        <a href="#nowhere" @click="update()" class="btn btn-success">提交</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+<script>
+    var vm = new Vue({
+        el: '#editPage',
+        data: {
+            //传入property的id
+            id:[[${id}]],
+            property:{
+                name:'',
+                id:[[${id}]]
+            },
+        },
+        mounted: function () {
+            this.$nextTick(function () {
+                this.getProperty();
+            });
+        },
+        methods: {
+            getProperty(){
+                $.ajax({
+                    type:'get',
+                    url:'property',
+                    data:{
+                        id :vm.id
+                    },
+                    success:(res)=>{
+                        vm.property = res.data;
+                    }
+                });
+            },
+            update(){
+                //分类id在这里取出来
+                let categoryId = vm.property.categoryInfoPO.id;
+                if (!checkEmpty(vm.property.name,'属性名称')){return}
+                $.ajax({
+                    type:'post',
+                    url:"property",
+                    data:{
+                        categoryId:categoryId,
+                        name:vm.property.name,
+                        id:vm.property.id
+                    },
+                    success:function (res) {
+                        var index = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(index);//关闭当前页
+                    }
+                });
+            }
+        }
+
+
+
+    });
+</script>
+</html>
