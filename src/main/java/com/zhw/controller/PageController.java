@@ -43,4 +43,20 @@ public class PageController {
         model.addAttribute("id",categoryId);
         return "admin/product/listProduct";
     }
+    //转跳到产品编辑页
+    @GetMapping("/editProduct")
+    public String goEditProductPage(Model model,@RequestParam("id") int productId){
+        model.addAttribute("id",productId);
+        return "admin/product/editPage";
+    }
+
+    //转跳到产品图片页
+    @GetMapping("/productImageList")
+    public String goProductImageList(Model model,@RequestParam("id") int productId){
+        model.addAttribute("id",productId);
+        return "admin/product/listProductImage";
+    }
+
+
+
 }

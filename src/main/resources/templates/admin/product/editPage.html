@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <head th:include="common/header::html('产品管理')">
+        <meta charset="UTF-8">
+    </head>
+    <style>
+        #editPage {
+            top: -70px;
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+<div id="editPage">
+    <ol class="breadcrumb">
+        <li><a href="admin_category_list">所有分类</a></li>
+        <li><a :href="'admin_product_list?cid='+category.id">{{category.name}}</a></li>
+        <li class="active">产品管理</li>
+    </ol>
+
+    <ol class="breadcrumb">
+        <li class="active">编辑产品</li>
+    </ol>
+    <div class="panel panel-warning editDiv">
+        <div class="panel-heading">编辑产品</div>
+        <div class="panel-body">
+            <table class="editTable">
+                <tr>
+                    <td>产品名称</td>
+                    <td><input v-model.trim="product.name" type="text" class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>产品小标题</td>
+                    <td><input v-model.trim="product.subTitle" type="text"
+                               class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>原价格</td>
+                    <td><input v-model.trim="product.originalPrice" type="text"
+                               class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>优惠价格</td>
+                    <td><input v-model.trim="product.promotePrice" type="text"
+                               class="form-control"></td>
+                </tr>
+                <tr>
+                    <td>库存</td>
+                    <td><input v-model.trim="product.stock" type="text"
+                               class="form-control"></td>
+                </tr>
+                <tr class="submitTR">
+                    <td colspan="2" align="center">
+                        <a href="#" class="btn btn-success" @click="update">提 交</a>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+<script>
+    const vm = new Vue({
+        el: '#editPage',
+        data: {
+            //传入product的id
+            id: [[${id}]],
+            product: {
+                name: '',
+                subTitle: '',
+                originalPrice: 0,
+                promotePrice: 0,
+                stock: 0
+            }
+        },
+        mounted: function () {
+            this.$nextTick(function () {
+                this.getProduct();
+            });
+        },
+        methods: {
+            getProduct() {
+                $.ajax({
+                    type: 'get',
+                    url: 'product',
+                    data: {
+                        id: vm.id
+                    },
+                    success: (res) => {
+                        vm.product = res.data;
+                    }
+                });
+            },
+            update() {
+                //分类id在这里取出来
+                let categoryId = vm.product.categoryInfoPO.id;
+                if (!checkEmpty(vm.product.name, '属性名称')) {
+                    return
+                }
+                $.ajax({
+                    type: 'post',
+                    url: "product",
+                    data: {
+                        categoryId: categoryId,
+                        name: vm.product.name,
+                        id: vm.product.id
+                    },
+                    success: function (res) {
+                        const index = parent.layer.getFrameIndex(window.name);
+                        parent.layer.close(index);//关闭当前页
+                    }
+                });
+            }
+        }
+
+
+    });
+</script>
+</html>

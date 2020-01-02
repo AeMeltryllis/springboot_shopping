@@ -1,6 +1,7 @@
 package com.zhw.controller;
 
 import com.zhw.pojo.CategoryInfoPO;
+import com.zhw.pojo.ProductImagePO;
 import com.zhw.pojo.ProductPO;
 import com.zhw.pojo.PropertyPO;
 import com.zhw.service.ICommonService;
@@ -13,8 +14,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.xml.crypto.Data;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -109,7 +112,7 @@ public class DataController {
 
 
     @GetMapping("/productPage")
-    public DataVO pageProduct(@RequestParam("id") int categoryId,int pageIndex, int size) {
+    public DataVO pageProduct(@RequestParam("id") int categoryId, int pageIndex, int size) {
         Page page = iCommonService.pageProduct(categoryId, pageIndex, size);
         //CategoryInfoPO categoryPO = iCommonService.getCategory(categoryId);
         //Map map = new HashMap();
@@ -126,12 +129,77 @@ public class DataController {
     }
 
     @PostMapping(value = "/product")
-    public DataVO saveOrUpdateProduct(ProductPO productPO,@RequestParam("categoryId")int categoryId) {
+    public DataVO saveOrUpdateProduct(ProductPO productPO, @RequestParam("categoryId") int categoryId) {
         CategoryInfoPO category = new CategoryInfoPO();
         category.setId(categoryId);
         productPO.setCategoryInfoPO(category);
         Integer integer = iCommonService.saveAndUpdateProduct(productPO);
         return new DataVO("保存成功");
     }
+
+    @GetMapping("/product")
+    public DataVO getProduct(int id) {
+        ProductPO product = iCommonService.getProduct(id);
+        return new DataVO(product);
+    }
+
+    /**
+     * 根据产品id和类型取出图片
+     * @param type
+     * @param productId
+     * @return
+     * @throws Exception
+     */
+    @GetMapping("/productImages/{productId}")
+    public DataVO list(@RequestParam("type") String type, @PathVariable("productId") int productId) throws Exception {
+        ProductPO pProductPO = iCommonService.getProduct(productId);
+        List<ProductImagePO> productImagePOs = iCommonService.listProductImages(pProductPO, type);
+        return new DataVO(productImagePOs);
+    }
+
+    /**
+     * 删除图片
+     * @param id
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    //@DeleteMapping("/productImage/{id}")
+    @RequestMapping(value = "/productImage/{id}",method = RequestMethod.DELETE)
+    public String delete(@PathVariable("id") int id)  throws Exception {
+        //先获取实体类
+        ProductImagePO productImagePO = iCommonService.getProductImage(id);
+        iCommonService.deleteProductImage(id);
+        return null;
+    }
+
+    /**
+     * 保存图片
+     * @param pid
+     * @param type
+     * @param image
+     * @param request
+     * @return
+     * @throws Exception
+     */
+    @PostMapping("/productImage")
+    public DataVO addProductImage(@RequestParam("productId") int productId, @RequestParam("type") String type, MultipartFile image) throws Exception {
+       //生成实体类
+        ProductImagePO productImagePO = new ProductImagePO();
+        ProductPO productPO = iCommonService.getProduct(productId);
+        productImagePO.setProductPO(productPO);
+        productImagePO.setType(type);
+        //保存
+        try {
+            iCommonService.addProductImage(productImagePO,image);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new DataVO("保存失败");
+        }
+        return new DataVO("保存成功");
+    }
+
+
+
 
 }

@@ -2,8 +2,10 @@ package com.zhw.service.Impl;
 
 import com.zhw.dao.ICategoryDO;
 import com.zhw.dao.IProductDO;
+import com.zhw.dao.IProductImageDO;
 import com.zhw.dao.IPropertyDO;
 import com.zhw.pojo.CategoryInfoPO;
+import com.zhw.pojo.ProductImagePO;
 import com.zhw.pojo.ProductPO;
 import com.zhw.pojo.PropertyPO;
 import com.zhw.service.ICommonService;
@@ -18,7 +20,9 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
@@ -26,7 +30,10 @@ import java.util.List;
 @Transactional
 public class CommonService implements ICommonService {
 
-    final static int PAGE_SIZE = 10;
+
+    public static final int PAGE_SIZE = 10;
+    public static final String IMAGE_TYPE_SINGLE = "single";
+    public static final String IMAGE_TYPE_DETAIL = "detail";
 
 
     @Autowired
@@ -35,6 +42,8 @@ public class CommonService implements ICommonService {
     IPropertyDO iPropertyDO;
     @Autowired
     IProductDO iProductDO;
+    @Autowired
+    IProductImageDO iProductImageDO;
 
     @Override
     public List<CategoryInfoPO> listCategory() {
@@ -196,6 +205,7 @@ public class CommonService implements ICommonService {
 
     /**
      * 产品页分页代码
+     *
      * @param categoryId
      * @param pageIndex
      * @param size
@@ -222,6 +232,120 @@ public class CommonService implements ICommonService {
         } else {
         }
 
+    }
+    /*产品图片crud一套*/
+    //添加图片
+    public void addProductImage(ProductImagePO productImagePO,MultipartFile image) throws Exception{
+        iProductImageDO.save(productImagePO);
+            //String folderPath = "img/";
+            String folderPath = ResourceUtils.getURL("classpath:static").getPath().replace("%20", " ").replace('/', '\\');
+            //判断类型保存
+            if(IMAGE_TYPE_SINGLE.equals(productImagePO.getType())){
+                folderPath +="productImage/single";
+            }
+            else{
+                folderPath +="productImage/detail";
+            }
+            File  imageFolderFile= new File(folderPath);
+            //new 一个指定路径文件对象
+            File file = new File(imageFolderFile,productImagePO.getId()+".jpg");
+            String fileName = file.getName();
+            if(!file.getParentFile().exists())
+            {file.getParentFile().mkdirs();}
+            //进行转换
+            image.transferTo(file);
+            BufferedImage img = ImageUtil.change2jpg(file);
+            ImageIO.write(img, "jpg", file);
+            //如果是单个图片，转换成不同像素保存
+        if(IMAGE_TYPE_SINGLE.equals(productImagePO.getType())){
+            String imageFolder_small=folderPath+ "/productSingle_small";
+            String imageFolder_middle=folderPath+ "/productSingle_middle";
+            File f_small = new File(imageFolder_small, fileName);
+            File f_middle = new File(imageFolder_middle, fileName);
+            f_small.getParentFile().mkdirs();
+            f_middle.getParentFile().mkdirs();
+            ImageUtil.resizeImage(file, 56, 56, f_small);
+            ImageUtil.resizeImage(file, 217, 190, f_middle);
+        }
+    }
+
+    /**
+     * 删除图片照片数据
+     * 并且删除实体图片
+     * @param id
+     */
+    @Override
+    public void deleteProductImage(int id) {
+        iProductImageDO.deleteById(id);
+
+        //String folder = "img/";
+        //if(ProductImageService.type_single.equals(bean.getType()))
+        //    folder +="productSingle";
+        //else
+        //    folder +="productDetail";
+        //
+        //File  imageFolder= new File(request.getServletContext().getRealPath(folder));
+        //File file = new File(imageFolder,bean.getId()+".jpg");
+        //String fileName = file.getName();
+        //file.delete();
+        //if(ProductImageService.type_single.equals(bean.getType())){
+        //    String imageFolder_small= request.getServletContext().getRealPath("img/productSingle_small");
+        //    String imageFolder_middle= request.getServletContext().getRealPath("img/productSingle_middle");
+        //    File f_small = new File(imageFolder_small, fileName);
+        //    File f_middle = new File(imageFolder_middle, fileName);
+        //    f_small.delete();
+        //    f_middle.delete();
+        //}
+
+    }
+
+    @Override
+    public ProductImagePO getProductImage(int id) {
+        return iProductImageDO.findById(id).get();
+    }
+    public List<ProductImagePO> listSingleProductImages(ProductPO productPO) {
+        return iProductImageDO.findByProductPOAndTypeOrderByIdDesc(productPO, IMAGE_TYPE_SINGLE);
+    }
+    public List<ProductImagePO> listDetailProductImages(ProductPO productPO) {
+        return iProductImageDO.findByProductPOAndTypeOrderByIdDesc(productPO, IMAGE_TYPE_DETAIL);
+    }
+
+    /**
+     * 为产品设置封面
+     * @param productPO
+     */
+    public void setFirstProdutImage(ProductPO productPO) {
+        List<ProductImagePO> singleImages = this.listSingleProductImages(productPO);
+        //如果有图片
+        if(!singleImages.isEmpty())
+            productPO.setFirstImage(singleImages.get(0));
+        else
+            productPO.setFirstImage(new ProductImagePO()); //这样做是考虑到产品还没有来得及设置图片，但是在订单后台管理里查看订单项的对应产品图片。
+    }
+
+    /**
+     * 遍历为产品设置封面
+     * @param products
+     */
+    public void setFirstProdutImages(List<ProductPO> products) {
+        for (ProductPO product : products)
+            setFirstProdutImage(product);
+    }
+
+    /**
+     * 判断返回不同类型的图片
+     * @param productPO
+     * @param type
+     * @return
+     */
+    @Override
+    public List<ProductImagePO> listProductImages(ProductPO productPO,String type){
+        if (IMAGE_TYPE_DETAIL.equals(type)){
+            return this.listDetailProductImages(productPO);
+        }else if(IMAGE_TYPE_SINGLE.equals(type)){
+            return this.listSingleProductImages(productPO);
+        }
+        else return new ArrayList<>();
     }
 
 }

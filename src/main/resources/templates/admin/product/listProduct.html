@@ -41,7 +41,7 @@
 
                 <td>
                     <!--                    照片-->
-                    <a :href="'admin_productImage_list?pid=' + item.id "><span
+                    <a :href="'productImageList?id=' + item.id "><span
                             class="glyphicon glyphicon-picture"></span></a>
                 </td>
                 <td>
@@ -51,10 +51,10 @@
                 </td>
 
                 <td>
-                    <a :href="'admin_product_edit?id=' + item.id "><span class="glyphicon glyphicon-edit"></span></a>
+                    <a href="#" @click="editPage(item.id)" ><span class="glyphicon glyphicon-edit"></span></a>
                 </td>
                 <td>
-                    <a href="#nowhere" @click="deleteParoduct(item.id)"><span
+                    <a href="#" @click="deleteParoduct(item.id)"><span
                             class="  glyphicon glyphicon-trash"></span></a>
                 </td>
             </tr>
@@ -115,7 +115,7 @@
 <div th:replace="admin/category/footer::html"></div>
 </body>
 <script>
-    var vm = new Vue({
+    const vm = new Vue({
         el: '#app',
         data: {
             id: [[${id}]],
@@ -141,6 +141,21 @@
 
         },
         methods: {
+            editPage(id){
+                layer.open({
+                    type: 2,
+                    title:false,
+                    closeBtn: 2,
+                    shade: [0],
+                    area: ['500px', '300px'],
+                    anim: 2,
+                    content: ['editProduct?id='+id, 'no'],
+                    end: function(){
+                        vm.pageProduct(1);
+                    }
+                });
+
+            },
             add() {
                 if (!checkEmpty(vm.product.name, "产品名称"))
                     return;

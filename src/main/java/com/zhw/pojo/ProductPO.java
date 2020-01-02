@@ -54,6 +54,12 @@ public class ProductPO implements Serializable {
     @Column(name = "is_deleted")
     private Boolean Deleted;
 
+    //缩略图，后端置入，不需要关联
+    //@Transient添加不进行序列化
+    @Transient
+    private ProductImagePO firstImage;
+
+
     public Integer getId() {
         return id;
     }
@@ -132,5 +138,13 @@ public class ProductPO implements Serializable {
 
     public void setDeleted(Boolean deleted) {
         Deleted = deleted;
+    }
+
+    public ProductImagePO getFirstImage() {
+        return firstImage;
+    }
+
+    public void setFirstImage(ProductImagePO firstImage) {
+        this.firstImage = firstImage;
     }
 }

@@ -1,6 +1,7 @@
 package com.zhw.service;
 
 import com.zhw.pojo.CategoryInfoPO;
+import com.zhw.pojo.ProductImagePO;
 import com.zhw.pojo.ProductPO;
 import com.zhw.pojo.PropertyPO;
 import org.springframework.data.domain.Page;
@@ -44,10 +45,15 @@ public interface ICommonService {
 
     ProductPO getProduct(int id);
 
-    Page pageProduct(int categoryId,int pageIndex, int size);
+    Page pageProduct(int categoryId, int pageIndex, int size);
 
     void deleteProduct(int id);
 
+    List<ProductImagePO> listProductImages(ProductPO productPO, String type);
+
+    ProductImagePO getProductImage(int id);
+    void addProductImage(ProductImagePO productImagePO,MultipartFile image) throws Exception;
+    void deleteProductImage(int id);
 
 
 }
