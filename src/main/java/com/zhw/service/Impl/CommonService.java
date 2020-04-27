@@ -1,13 +1,7 @@
 package com.zhw.service.Impl;
 
-import com.zhw.dao.ICategoryDO;
-import com.zhw.dao.IProductDO;
-import com.zhw.dao.IProductImageDO;
-import com.zhw.dao.IPropertyDO;
-import com.zhw.pojo.CategoryInfoPO;
-import com.zhw.pojo.ProductImagePO;
-import com.zhw.pojo.ProductPO;
-import com.zhw.pojo.PropertyPO;
+import com.zhw.dao.*;
+import com.zhw.pojo.*;
 import com.zhw.service.ICommonService;
 import com.zhw.util.ImageUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +29,13 @@ public class CommonService implements ICommonService {
     public static final String IMAGE_TYPE_SINGLE = "single";
     public static final String IMAGE_TYPE_DETAIL = "detail";
 
+    public static final String WAIT_PAY = "waitPay";
+    public static final String WAIT_DELIVERY = "waitDelivery";
+    public static final String WAIT_COMFIRM = "waitConfirm";
+    public static final String HAS_REVIEW = "waitReview";
+    public static final String HAS_FINISH = "finish";
+    public static final String HAS_DELETE = "delete";
+
 
     @Autowired
     ICategoryDO iCategoryDO;
@@ -44,6 +45,10 @@ public class CommonService implements ICommonService {
     IProductDO iProductDO;
     @Autowired
     IProductImageDO iProductImageDO;
+    @Autowired
+    IUserDO iUserDO;
+    @Autowired IOrderItemDO iorderItemDO;
+    @Autowired IOrderDO iorderDO;
 
     @Override
     public List<CategoryInfoPO> listCategory() {
@@ -66,7 +71,7 @@ public class CommonService implements ICommonService {
     @Override
     public Page pageCategory(int pageIndex, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
-        //Page类中的下标是从0开始，所以穿进来的pageIndex要-1
+        //Page类中的下标是从0开始，所以传进来的pageIndex要-1
         CategoryInfoPO temporaryPO = new CategoryInfoPO();
         temporaryPO.setDeleted(false);
         Pageable page = PageRequest.of(pageIndex - 1, size, sort);
@@ -347,5 +352,102 @@ public class CommonService implements ICommonService {
         }
         else return new ArrayList<>();
     }
+    @Override
+    public Page pageUser( int pageIndex, int size) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        UserPO temporaryPO = new UserPO();
+//        temporaryPO.setDeleted(false);
+        Pageable page = PageRequest.of(pageIndex - 1, size, sort);
+        Example<UserPO> example = Example.of(temporaryPO);
+        return iUserDO.findAll(example, page);
+    }
+
+//订单模块
+public void fill(List<OrderInfoPO> orders) {
+    for (OrderInfoPO order : orders)
+        fill(order);
+}
+    public void fill(OrderInfoPO order) {
+//        查询出所有
+        List<OrderItemPO> orderItems = listByOrder(order);
+//        总价格
+        float totalPrice = 0;
+//        总数
+        int totalNumber = 0;
+        for (OrderItemPO orderItem :orderItems) {
+            totalPrice+=orderItem.getNumber()*orderItem.getProductPO().getPromotePrice();
+            totalNumber+=orderItem.getNumber();
+            this.setFirstProdutImage(orderItem.getProductPO());
+        }
+//        统合订单数据
+//        order.(total);
+//        order.setOrderItems(orderItems);
+//        order.setTotalNumber(totalNumber);
+    }
+
+    /**
+     * 获取全部订单信息
+     * @param order
+     * @return
+     */
+    public List<OrderItemPO> listByOrder(OrderInfoPO item) {
+        Sort sort = new Sort(Sort.Direction.DESC, "id");
+        return IOrderItemDO.findAll(sort);
+
+
+    }
+
+    /**
+     * 订单分页
+     */
+    @Override
+    public Page pageOrder(int pageIndex, int size) {
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        OrderInfoPO temporaryPO = new OrderInfoPO();
+//        temporaryPO.setDeleted(false);
+        Pageable page = PageRequest.of(pageIndex - 1, size, sort);
+        Example<OrderInfoPO> example = Example.of(temporaryPO);
+        return iorderDO.findAll(page);
+    }
+
+    /**
+     * 停止订单循环的bug
+     * @param orders
+     */
+//    public void stopOrderLeap(List<OrderInfoPO> orders) {
+//        for (OrderInfoPO order : orders) {
+//            stopOrderLeap(order);
+//        }
+//    }
+//    private void stopOrderLeap(OrderInfoPO order) {
+//        List<OrderItemPO> orderItems= order.getOrderItems();
+//        for (OrderItem orderItem : orderItems) {
+//            orderItem.setOrder(null);
+//        }
+//    }
+
+    @Override
+    public Integer saveOrUpdateOrder(OrderInfoPO orderInfoPO) {
+        if (orderInfoPO.getId() != null) {
+            OrderInfoPO porderInfoPO = iorderDO.getById(orderInfoPO.getId());
+            if (porderInfoPO != null) {
+                //进入这里代表数据库有这条数据
+                porderInfoPO.setUpdateTime(new Date());
+//                porderInfoPO.setName(orderInfoPO.getName());
+//                返回保存后的订单数据
+                OrderInfoPO PO = iorderDO.save(orderInfoPO);
+                return PO.getId();
+            }
+        } else {
+            OrderInfoPO PO = iorderDO.save(orderInfoPO);
+            return PO.getId();
+        }
+        return null;
+    }
+    @Override
+    public OrderInfoPO getAOrder(int id) {
+        return iorderDO.getById(id);
+    }
+
 
 }
