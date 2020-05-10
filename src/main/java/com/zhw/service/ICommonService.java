@@ -1,9 +1,7 @@
 package com.zhw.service;
 
-import com.zhw.pojo.CategoryInfoPO;
-import com.zhw.pojo.ProductImagePO;
-import com.zhw.pojo.ProductPO;
-import com.zhw.pojo.PropertyPO;
+import com.zhw.pojo.*;
+import com.zhw.xxo.DataVO;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -13,6 +11,7 @@ import java.util.List;
 
 @Service
 public interface ICommonService {
+
     List<CategoryInfoPO> listCategory();
 
     CategoryInfoPO getCategory(int id);
@@ -46,6 +45,9 @@ public interface ICommonService {
     ProductPO getProduct(int id);
 
     Page pageProduct(int categoryId, int pageIndex, int size);
+//前台获取分类方法
+    List<CategoryInfoPO> homeCategory();
+    void removeCategoryFromProduct(List<CategoryInfoPO> list);
 
     void deleteProduct(int id);
 
@@ -54,6 +56,26 @@ public interface ICommonService {
     ProductImagePO getProductImage(int id);
     void addProductImage(ProductImagePO productImagePO,MultipartFile image) throws Exception;
     void deleteProductImage(int id);
+//    用户分页
+    Page pageUser( int pageIndex, int size);
+//    订单分页
+    Page pageOrder(int pageIndex, int size);
+//    保存更新订单接口
+    Integer saveOrUpdateOrder(OrderInfoPO orderInfoPO);
+//    获取单个id
+    OrderInfoPO getAOrder(int id);
+//用户检测
+DataVO checkUser(UserPO userPO);
+//获取单个用户信息
+    UserPO getUserByNameAndPassword(String name, String password);
+//    前端获取商品信息函数
+    DataVO getProductInfoInFore(int productId);
+//    商品搜索
+List<ProductPO> searchProduct(String keyword);
+
+
+
+
 
 
 }

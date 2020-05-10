@@ -4,21 +4,29 @@ import com.zhw.dao.*;
 import com.zhw.pojo.*;
 import com.zhw.service.ICommonService;
 import com.zhw.util.ImageUtil;
+import com.zhw.xxo.DataVO;
+import com.zhw.xxo.ProductVO;
+import org.apache.catalina.User;
+import org.hibernate.Session;
+import org.hibernate.ejb.HibernateEntityManager;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ResourceUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.util.HtmlUtils;
 
 import javax.imageio.ImageIO;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 @Service
 @Transactional
@@ -49,7 +57,16 @@ public class CommonService implements ICommonService {
     IUserDO iUserDO;
     @Autowired IOrderItemDO iorderItemDO;
     @Autowired IOrderDO iorderDO;
+    @Autowired IReviewDO iReviewDO;
 
+    @PersistenceContext
+    private EntityManager entityManager;
+
+    /**
+     * 获取分类
+     * 会包含商品信息
+     * @return
+     */
     @Override
     public List<CategoryInfoPO> listCategory() {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
@@ -78,6 +95,78 @@ public class CommonService implements ICommonService {
         Example<CategoryInfoPO> example = Example.of(temporaryPO);
         return iCategoryDO.findAll(example, page);
     }
+
+    /**
+     * 商品分类去质器
+     * @param cs
+     */
+    public void removeCategoryFromProduct(List<CategoryInfoPO> categorys) {
+        for (CategoryInfoPO category : categorys) {
+            removeCategoryFromProduct(category);
+        }
+    }
+
+    /**
+     * 该方法有大问题，修改实体类会触发事务管理，自动保存进数据库
+     * @param category
+     */
+    public void removeCategoryFromProduct(CategoryInfoPO category) {
+
+        Session session = entityManager.unwrap(org.hibernate.Session.class);
+//        获取先前存入分类中的商品
+        List<ProductPO> products =category.getProducts();
+//        临时商品实体集合
+        List<ProductPO> tProducts =new ArrayList<>();
+//        临时商品实体
+        if(null!=products) {
+            for (ProductPO product : products) {
+                ProductPO tProductPo = new ProductPO();
+                BeanUtils.copyProperties(product,tProductPo);
+//                将商品中的分类设置为null
+//                CategoryInfoPO categoryInfoPOaaaaa = new CategoryInfoPO();
+//                categoryInfoPOaaaaa.setId(1);
+                tProductPo.setCategoryInfoPO(null);
+//               核心方法，删除对象里的缓存，不会自动更新！！！
+                session.evict(tProductPo);
+                tProducts.add(tProductPo);
+            }
+//            将修改好的集合放回实体类
+            category.setProducts(tProducts);
+        }
+
+        List<List<ProductPO>> productsByRow =category.getProductsByRow();
+//        临时
+        ProductPO tProduct = new ProductPO();
+        //        临时商品实体集合
+        if(null!=productsByRow) {
+            for (List<ProductPO> ps : productsByRow) {
+                for (ProductPO p: ps) {
+                    p.setCategoryInfoPO(null);
+                    session.evict(p);
+                }
+            }
+        }
+    }
+
+    /**
+     * 将数据设置进实体类中
+     * @param product
+     */
+    public void setSaleAndReviewNumber(ProductPO product) {
+        int saleCount = this.getSaleCount(product);
+//        设置进去
+        product.setSaleNumber(saleCount);
+        int reviewCount = this.getProductReviewCount(product);
+        product.setReviewNumber(reviewCount);
+
+    }
+
+    public void setSaleAndReviewNumber(List<ProductPO> products) {
+        for (ProductPO product : products)
+            this.setSaleAndReviewNumber(product);
+    }
+
+
 
     /**
      * 保存分类
@@ -191,6 +280,11 @@ public class CommonService implements ICommonService {
         return iPropertyDO.findById(id).get();
     }
 
+    /**
+     * 保存修改产品函数
+     * @param productPO
+     * @return
+     */
     @Override
     public Integer saveAndUpdateProduct(ProductPO productPO) {
         if (productPO.getId() != null) {
@@ -207,6 +301,8 @@ public class CommonService implements ICommonService {
     public ProductPO getProduct(int id) {
         return iProductDO.findById(id).get();
     }
+
+
 
     /**
      * 产品页分页代码
@@ -228,6 +324,10 @@ public class CommonService implements ICommonService {
         return iProductDO.findAll(example, page);
     }
 
+    /**
+     * 删除商品函数
+     * @param id
+     */
     @Override
     public void deleteProduct(int id) {
         ProductPO productPO = iProductDO.findById(id).get();
@@ -238,6 +338,104 @@ public class CommonService implements ICommonService {
         }
 
     }
+
+    /**
+     * 商品去质函数
+     * @param categorys
+     */
+    public void fillProduct(List<CategoryInfoPO> categorys) {
+        for (CategoryInfoPO category : categorys) {
+            fillProduct(category);
+        }
+    }
+    public void fillProduct(CategoryInfoPO category) {
+        List<ProductPO> products = iProductDO.findByCategoryInfoPO(category);
+//        填充图片
+        this.setFirstProdutImages(products);
+        category.setProducts(products);
+    }
+
+    /**
+     * 获取前台首页所有数据方法
+     * @return
+     */
+    public List<CategoryInfoPO> homeCategory(){
+//        list出来的新数据，被保存在session中
+        List<CategoryInfoPO> categoryInfoPOS= this.listCategory();
+//        向分类集合填充商品
+        this.fillProduct(categoryInfoPOS);
+        this.fillByRow(categoryInfoPOS);
+        /**
+         *复制集合
+         */
+        List<CategoryInfoPO> tlist = new ArrayList<>();
+        for (CategoryInfoPO tt:categoryInfoPOS
+             ) {
+            CategoryInfoPO ttcategoryInfoPO = new CategoryInfoPO();
+//            复制成新的实体类
+            BeanUtils.copyProperties(tt,ttcategoryInfoPO);
+//            将复制的实体类添加进新的集合
+            tlist.add(ttcategoryInfoPO);
+        }
+//        将新集合去质
+//        this.removeCategoryFromProduct(tlist);
+//        返回前台集合
+        return tlist;
+    }
+
+
+    /**
+     * 百度方法，待试验
+     * @param categorys
+     */
+    public void fillByRow(List<CategoryInfoPO> categorys) {
+//        暂定为8
+        int productNumberEachRow = 8;
+        for (CategoryInfoPO category : categorys) {
+            List<ProductPO> products =  category.getProducts();
+            List<List<ProductPO>> productsByRow =  new ArrayList<>();
+            for (int i = 0; i < products.size(); i+=productNumberEachRow) {
+                int size = i+productNumberEachRow;
+                size= size>products.size()?products.size():size;
+                List<ProductPO> productsOfEachRow =products.subList(i, size);
+                productsByRow.add(productsOfEachRow);
+            }
+            category.setProductsByRow(productsByRow);
+        }
+    }
+
+
+    /**
+     * 前端获取产品信息函数
+     * @param productImagePO
+     * @param image
+     * @throws Exception
+     */
+    @Override
+    public DataVO getProductInfoInFore(int productId){
+        ProductPO product = this.getProduct(productId);
+        List<ProductImagePO> productSingleImages = this.listSingleProductImages(product);
+        List<ProductImagePO> productDetailImages = this.listDetailProductImages(product);
+        product.setProductSingleImages(productSingleImages);
+        product.setProductDetailImages(productDetailImages);
+//      属性管理后来添加
+//        List<> pvs = propertyValueService.list(product);
+        List<ReviewPO> reviews = iReviewDO.findByProductPOOrderByIdDesc(product);
+        this.setSaleAndReviewNumber(product);
+        this.setFirstProdutImage(product);
+//用map保存
+        Map<String,Object> map= new HashMap<>();
+        map.put("product", product);
+//        map.put("pvs", pvs);
+        map.put("reviews", reviews);
+
+        return new DataVO(map);
+
+    }
+
+
+
+
     /*产品图片crud一套*/
     //添加图片
     public void addProductImage(ProductImagePO productImagePO,MultipartFile image) throws Exception{
@@ -380,9 +578,9 @@ public void fill(List<OrderInfoPO> orders) {
             this.setFirstProdutImage(orderItem.getProductPO());
         }
 //        统合订单数据
-//        order.(total);
-//        order.setOrderItems(orderItems);
-//        order.setTotalNumber(totalNumber);
+        order.setTotal(totalPrice);
+        order.setOrderItems(orderItems);
+        order.setTotalNumber(totalNumber);
     }
 
     /**
@@ -391,10 +589,10 @@ public void fill(List<OrderInfoPO> orders) {
      * @return
      */
     public List<OrderItemPO> listByOrder(OrderInfoPO item) {
-        Sort sort = new Sort(Sort.Direction.DESC, "id");
-        return IOrderItemDO.findAll(sort);
 
-
+//      spring2.2只能静态生成sort对象  Sort sort = new Sort(Sort.Direction.DESC, "id");
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        return iorderItemDO.findAll(sort);
     }
 
     /**
@@ -404,35 +602,74 @@ public void fill(List<OrderInfoPO> orders) {
     public Page pageOrder(int pageIndex, int size) {
         Sort sort = Sort.by(Sort.Direction.DESC, "id");
         OrderInfoPO temporaryPO = new OrderInfoPO();
-//        temporaryPO.setDeleted(false);
         Pageable page = PageRequest.of(pageIndex - 1, size, sort);
         Example<OrderInfoPO> example = Example.of(temporaryPO);
-        return iorderDO.findAll(page);
+        Page<OrderInfoPO> all = iorderDO.findAll(page);
+
+        this.fill(all.getContent());
+        this.stopOrderLeap(all.getContent());
+        this.changeOrderStatus(all.getContent());
+        return all;
+    }
+public void changeOrderStatus(List<OrderInfoPO> orders){
+    for (OrderInfoPO o:orders
+         ) {
+        String statusDesc = o.getOrderStatus();
+//        if(null!=statusDesc)
+//            return ;
+        String desc ="未知状态";
+        switch(statusDesc){
+            case WAIT_PAY:
+                desc="等待付款";
+                break;
+            case WAIT_DELIVERY:
+                desc="等待发货";
+                break;
+            case WAIT_COMFIRM:
+                desc="等待接收";
+                break;
+            case HAS_REVIEW:
+                desc="已等评";
+                break;
+            case HAS_FINISH:
+                desc="已完成";
+                break;
+            case HAS_DELETE:
+                desc="已刪除";
+                break;
+            default:
+                desc="未知状态";
+        }
+        o.setStatusDesc(desc);
+
     }
 
+}
+
+
     /**
-     * 停止订单循环的bug
+     * 停止订单循环的bug函数
      * @param orders
      */
-//    public void stopOrderLeap(List<OrderInfoPO> orders) {
-//        for (OrderInfoPO order : orders) {
-//            stopOrderLeap(order);
-//        }
-//    }
-//    private void stopOrderLeap(OrderInfoPO order) {
-//        List<OrderItemPO> orderItems= order.getOrderItems();
-//        for (OrderItem orderItem : orderItems) {
-//            orderItem.setOrder(null);
-//        }
-//    }
+    public void stopOrderLeap(List<OrderInfoPO> orders) {
+        for (OrderInfoPO order : orders) {
+            stopOrderLeap(order);
+        }
+    }
+    private void stopOrderLeap(OrderInfoPO order) {
+        List<OrderItemPO> orderItems= order.getOrderItems();
+        for (OrderItemPO orderItem : orderItems) {
+            orderItem.setOrderInfoPO(null);
+        }
+    }
 
     @Override
     public Integer saveOrUpdateOrder(OrderInfoPO orderInfoPO) {
         if (orderInfoPO.getId() != null) {
-            OrderInfoPO porderInfoPO = iorderDO.getById(orderInfoPO.getId());
-            if (porderInfoPO != null) {
+            OrderInfoPO pOrderInfoPO = iorderDO.getById(orderInfoPO.getId());
+            if (pOrderInfoPO != null) {
                 //进入这里代表数据库有这条数据
-                porderInfoPO.setUpdateTime(new Date());
+                pOrderInfoPO.setUpdateTime(new Date());
 //                porderInfoPO.setName(orderInfoPO.getName());
 //                返回保存后的订单数据
                 OrderInfoPO PO = iorderDO.save(orderInfoPO);
@@ -448,6 +685,160 @@ public void fill(List<OrderInfoPO> orders) {
     public OrderInfoPO getAOrder(int id) {
         return iorderDO.getById(id);
     }
+//获取已售数量
+    public int getSaleCount(ProductPO product) {
+        List<OrderItemPO> orderItemPOS =this.listOrderItemByProduct(product);
+//        结果
+        int result =0;
+        for (OrderItemPO oi : orderItemPOS) {
+            if(null!=oi.getOrderInfoPO())
+//             循环计算总额
+                if(null!= oi.getOrderInfoPO() && null!=oi.getOrderInfoPO().getPayDate())
+                    result+=oi.getNumber();
+        }
+        return result;
+    }
+//    根据产品遍历
+    public List<OrderItemPO> listOrderItemByProduct(ProductPO product) {
+        return iorderItemDO.findByProductPO(product);
+    }
+//    根据订单遍历
+    public List<OrderItemPO> listOrderItemByOrder(OrderInfoPO order) {
+        return iorderItemDO.findByOrderInfoPOOrderByIdDesc(order);
+    }
+
+    public OrderItemPO getOrderItem(int id) {
+        return iorderItemDO.getOne(id);
+    }
+
+    public void delete(int id) {
+        iorderItemDO.deleteById(id);
+    }
+
+    /**
+     * 添加修改订单项，老一套函数
+     * @param orderItemPO
+     * @return
+     */
+    public Integer saveOrUpdateOrderItem(OrderItemPO orderItemPO) {
+        if (orderItemPO.getId() != null) {
+            OrderItemPO orderItemPOP = iorderItemDO.getOne(orderItemPO.getId());
+            if (orderItemPOP != null) {
+                orderItemPOP.setUpdateTime(new Date());
+//                porderInfoPO.setName(orderInfoPO.getName());
+                OrderItemPO PO = iorderItemDO.save(orderItemPOP);
+                return PO.getId();
+            }
+        } else {
+//            如果没有就保存
+            OrderItemPO PO = iorderItemDO.save(orderItemPO);
+            return PO.getId();
+        }
+        return null;
+    }
+
+
+
+
+
+    /*写用户登录方法*/
+
+    public UserPO getUserByName(String name) {
+        return iUserDO.findByName(name);
+    }
+    public void addUser(UserPO user) {
+        iUserDO.save(user);
+    }
+
+    /**
+     * 用户祖册方法
+     * @param userPO
+     * @return
+     */
+    public DataVO checkUser(UserPO userPO){
+        String name =  userPO.getName();
+        String password = userPO.getPassWord();
+//        hutool转义
+//        name = HtmlUtils.htmlEscape(name);
+        userPO.setName(name);
+        boolean exist = this.getUserByName(name)!=null;
+//        判断数据库中是否存在
+        if(exist){
+            String message ="用户名已经被使用,不能使用";
+            DataVO dataVO = new DataVO();
+            dataVO.setFailMsg(message);
+            return dataVO;
+    }
+        //如果不存在，保存
+        userPO.setPassWord(password);
+        this.addUser(userPO);
+        return new DataVO("ok");
+}
+
+    @Override
+    public UserPO getUserByNameAndPassword(String name, String password) {
+        return iUserDO.getByNameAndPassWord(name,password);
+    }
+/*评价模块*/
+
+    /**
+     * 保存评价函数
+     * @param review
+     */
+    public void addReview(ReviewPO review) {
+    iReviewDO.save(review);
+}
+
+    /**
+     * 获取产品评价
+     * @param product
+     * @return
+     */
+    public List<ReviewPO> list(ProductPO product){
+        List<ReviewPO> result =  iReviewDO.findByProductPOOrderByIdDesc(product);
+        return result;
+    }
+
+    public int getProductReviewCount(ProductPO product) {
+        return iReviewDO.countByProductPO(product);
+    }
+
+    /*搜索功能块*/
+    @Override
+    public List<ProductPO> searchProduct(String keyword){
+
+        List<ProductPO> productPOS= this.searchProductByJpa(keyword,0,20);
+//置入相片
+        this.setFirstProdutImages(productPOS);
+        this.setSaleAndReviewNumber(productPOS);
+        return productPOS;
+    }
+
+    /**
+     * 搜索模糊查询
+     * @param keyword
+     * @param start
+     * @param size
+     * @return
+     */
+    public List<ProductPO> searchProductByJpa(String keyword, int start, int size) {
+//        jpa新版还能静态生成
+        Sort sort = Sort.by(Sort.Direction.DESC, "id");
+        Pageable page = PageRequest.of(start, size, sort);
+//        模糊搜索
+        List<ProductPO> products =iProductDO.findByNameLike("%"+keyword+"%",page);
+        return products;
+    }
+
+    /*订单项模块*/
+
 
 
 }
+
+
+
+
+
+
+

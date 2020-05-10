@@ -1,0 +1,19 @@
+<div class th:fragment="html">
+    <a th:href="${application.contextPath}">
+<!--        <img id="simpleLogo" class="simpleLogo" src="../../../static/img/site/simpleLogo.png">-->
+        <img id="logo" src="img/sucai/school_sign.jpg" class="logo" width="200" height="200">
+    </a>
+    <form action="search" method="get" >
+        <div class="simpleSearchDiv pull-right">
+            <input type="text" placeholder="请输入要搜索的关键字"  name="keyword">
+            <button class="searchButton" type="submit">点击搜索</button>
+            <div class="searchBelow">
+                <span th:each="c,status: ${application.categories_below_search}" th:if="${status.index>=7 && status.index<=10}">
+                    <a th:href="@{'category?cid='+${c.id}}" th:text="${c.name}" ></a>
+                    <span th:if="${status.index!=10}">|</span>
+                </span>
+            </div>
+        </div>
+    </form>
+    <div style="clear:both"></div>
+</div>

@@ -1,0 +1,30 @@
+<div th:fragment="html">
+    <div class="homepageCategoryProducts">
+        <div class="eachHomepageCategoryProducts" v-for="c in categories">
+            <div class="left-mark"></div>
+<!--            分类名字-->
+            <span class="categoryTitle">{{c.name}}</span>
+            <br>
+            <div class="productItem"  v-for="product,index in c.products" v-if="index<5" >
+                <a :href="'productFore?productId='+product.id">
+<!--                    <a :href="'product?pid='+123">-->
+<!--                    <img width="100px" :src="'img/productSingle_middle/'+product.firstProductImage.id+'.jpg'" alt="无图片">-->
+                </a>
+
+<!--                <a class="productItemDescLink" :href="'product?pid='+product.id">-->
+                    <a class="productItemDescLink" :href="'productFore?productId='+product.id">
+									<span class="productItemDesc">[热销111]
+									{{product.name | subStringFilter(0,20)}}
+									</span>
+                </a>
+                <span class="productPrice">
+									{{product.promotePrice | formatMoneyFilter}}
+								</span>
+            </div>
+
+            <div style="clear:both"></div>
+        </div>
+
+        <img id="endpng" class="endpng" src="img/site/end.png" alt="读取失败">
+    </div>
+</div>

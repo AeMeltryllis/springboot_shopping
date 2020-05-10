@@ -1,0 +1,45 @@
+<div class th:fragment="html">
+<!--    <script>-->
+<!--        $(function(){-->
+
+<!--            var data4Vue = {-->
+<!--                uri:'foresearch',-->
+<!--                products:[]-->
+<!--            };-->
+<!--            //ViewModel-->
+<!--            var vue = new Vue({-->
+<!--                el: '#workingArea',-->
+<!--                data: {-->
+<!--                    uri:'foresearch',-->
+<!--                    products:[],-->
+<!--                    keyword:''-->
+<!--                },-->
+<!--                mounted:function(){ -->
+<!--                    this.$nextTick(-->
+<!--                        function () {-->
+<!--                            this.load();-->
+<!--                        }-->
+<!--                    );-->
+
+<!--                },-->
+<!--                methods: {-->
+<!--                    load:function(){-->
+<!--                        var url =  this.uri+"?keyword="+vue.keyword;-->
+<!--                        axios.post(url).then(function(response) {-->
+<!--                            vue.products = response.data.data;-->
+<!--                            vue.$nextTick(function(){-->
+<!--                                linkDefaultActions();-->
+<!--                            })-->
+<!--                        });-->
+<!--                    }-->
+<!--                }-->
+<!--            });-->
+<!--        })-->
+<!--    </script>-->
+
+    <div id="searchResult">
+        <div class="searchResultDiv">
+            <div th:replace="include/fore/productsBySearch::html" ></div>
+        </div>
+    </div>
+</div>

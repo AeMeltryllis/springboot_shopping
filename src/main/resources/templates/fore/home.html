@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!--主页-->
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="include/fore/header::html" ></head>
+<!--<head th:include="common/header::html('首页')" ></head>-->
+<body>
+<div id="workingArea">
+    <div th:replace="include/fore/top::html" ></div>
+    <div th:replace="include/fore/search::html" ></div>
+    <div th:replace="include/fore/home/homePage::html" ></div>
+    <div th:replace="admin/category/footer::html" ></div>
+</div>
+</body>
+</html>

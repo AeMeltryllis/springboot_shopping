@@ -1,10 +1,13 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
+<html xmlns:th="http://www.thymeleaf.org">
+<head th:include="common/header::html" ></head>
 <body>
-
+<div id="workingArea">
+    <div th:replace="fore/topHead::html" ></div>
+    <div th:replace="fore/common/searchDiv::html" ></div>
+    <div th:replace="fore/other/product/productPage::html" ></div>
+    <div th:replace="fore/modal4login::html" ></div>
+    <div th:replace="admin/category/footer::html" ></div>
+</div>
 </body>
 </html>

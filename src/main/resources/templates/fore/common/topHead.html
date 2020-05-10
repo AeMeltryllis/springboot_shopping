@@ -1,0 +1,26 @@
+<nav class="top" th:fragment="html">
+    <a th:href="${application.contextPath}">
+<!--        返回主页-->
+        <span style="color:#C40000;margin:0px" class=" glyphicon glyphicon-home redColor"></span>
+        广东第二师范学院主页
+    </a>
+
+    <span>欢迎您顾客</span>
+
+    <span th:if="${null!=session.user}">
+        <a href="login" th:text="${session.user.name}"></a>
+        <a href="forelogout" >退出</a>
+    </span>
+
+    <span th:if="${null==session.user}">
+        <a href="login">请登录</a>
+        <a href="register">注册</a>
+    </span>
+
+    <span class="pull-right">
+            <a href="bought">进入我的订单</a>
+            <a href="cart">
+            <span style="color:#C40000;margin:0px" class=" glyphicon glyphicon-shopping-cart redColor"></span>
+            购物车<strong th:text="${session.cartTotalItemNumber}"></strong>件</a>
+    </span>
+</nav>

@@ -1,0 +1,39 @@
+<!--<script>-->
+<!--    var vm = new Vue({-->
+<!--        el: '#searchDiv',-->
+<!--        data: {-->
+<!--            keyWordString:'',-->
+<!--        },-->
+<!--        mounted: function () {-->
+<!--            this.$nextTick(-->
+<!--                function () {-->
+<!--                }-->
+<!--            );-->
+<!--        },-->
+<!--        methods: {-->
+<!--            search(){-->
+<!--                location.href("search?keyword="+vm.keyWordString);-->
+
+<!--            }-->
+
+<!--        }-->
+<!--    });-->
+<!--</script>-->
+<div class th:fragment="html">
+    <a th:href="${application.contextPath}">
+        <img id="logo" src="img/sucai/school_sign.jpg" class="logo" width="100" height="100 ">
+    </a>
+    <form action="search" method="get" >
+        <div class="searchDiv">
+            <input name="keyword" type="text" placeholder="请输入搜索内容 " autocomplete="off">
+            <button  type="submit" @click ='search()' class="searchButton">搜索</button>
+            <div class="searchBelow">
+<!--				<span th:each="c,status: ${application.categories_below_search}" th:if="${status.index>=5 && status.index<=8}">-->
+<!--					<a th:href="@{'category?cid='+${c.id}}" th:text="${c.name}" ></a>-->
+<!--					<span th:if="${status.index!=8}">|</span>-->
+<!--	            </span>-->
+
+            </div>
+        </div>
+    </form>
+</div>

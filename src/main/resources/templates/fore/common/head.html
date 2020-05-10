@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<!--共通文件夹-->
+<head th:include="common/header::html('首页')" ></head>
+<body>
+<div id="workingArea">
+<!--    头部横幅-->
+    <div th:replace="fore/common/topHead::html" ></div>
+<!--    搜索块-->
+    <div th:replace="fore/common/searchDiv::html" ></div>
+<!--    主页部分-->
+    <div th:replace="fore/common/home::html" ></div>
+<!--    页脚-->
+    <div th:replace="admin/category/footer::html"></div>
+</div>
+</body>
+</html>

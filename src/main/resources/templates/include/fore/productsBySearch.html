@@ -1,0 +1,61 @@
+﻿<div class th:fragment="html">
+	<script>
+		$(function(){
+			var vue = new Vue({
+				// el: '#workingArea',
+				el: '#workingArea',
+				data: {
+					//要填入引号内当做字符串
+					keyWord:'[[${keyWord}]]',
+					uri:'search',
+					//获取到的产品集合
+					products:[]
+				},
+				mounted:function(){
+					this.$nextTick(
+							function () {
+							this.load();
+					                      })
+				},
+				methods: {
+					load:function(){
+						var url ="searchProduct?keyword="+this.keyWord;
+						axios.post(url).then(function(response) {
+							vue.$nextTick(function(){
+								//花费了很多时间的bug，因为监听而没将数据渲染到
+								this.products = response.data.data;
+								linkDefaultActions();
+							})
+						});
+					}
+				}
+			});
+		})
+	</script>
+	<div class="searchProducts">
+		<div class="productUnit"  price="${p.promotePrice}" v-for="p in products" >
+<!--			以下的href都先去了：-->
+			<a :href="'productFore?productId='+p.id">
+				<img class="productImage" :src="'img/productSingle/'+p.firstImage.id+'.jpg'" alt="图片失效">
+			</a>
+			<span class="productPrice">
+				{{p.promotePrice|formatMoneyFilter}}
+			</span>
+			<a class="productLink" :href="'productFore?productId='+p.id">
+				{{p.name|subStringFilter(0,50)}}
+			</a>
+
+<!--			<a  class="tmallLink" href="">专卖区域</a>-->
+
+			<div class="show1 productInfo">
+				<span class="monthDeal ">月成交 <span class="productDealNumber">{{p.saleNumber}}笔</span></span>
+				<span class="productReview">评价<span class="productReviewNumber">{{p.reviewNumber}}</span></span>
+			</div>
+
+		</div>
+
+		<div v-if="0==products.length" class="noMatch">没有满足条件的产品</div>
+		<div style="clear:both"></div>
+	</div>
+</div>
+	

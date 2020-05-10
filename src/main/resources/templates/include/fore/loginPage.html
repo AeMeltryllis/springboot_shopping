@@ -1,0 +1,93 @@
+<div th:fragment="html">
+    <script>
+        $(function(){
+            var data4Vue = {
+                uri:'forelogin',
+                result: [],
+                user:{name:'', password:''}
+            };
+            var vue = new Vue({
+                el: '#workingArea',
+                data: {
+                    user:{name:'', password:''}
+                },
+                mounted:function(){
+                    linkDefaultActions();
+                },
+                methods: {
+                    login:function(){
+                        var url =  this.uri;
+                        if(0==vue.user.name.length){
+                            $("span.errorMessage").html("请输入用户名");
+                            $("div.loginErrorMessageDiv").css("visibility","visible");
+                            return;
+                        }
+                        if(0==vue.user.password.length){
+                            $("span.errorMessage").html("请输入密码");
+                            $("div.loginErrorMessageDiv").css("visibility","visible");
+                            return;
+                        }
+                        $.ajax({
+                            type:'post',
+                            url:'',
+                            data:{
+                                name:vue.user.name,
+                                passWord:vue.user.password
+                            },
+                            success:(res)=>{
+                                if (res.success!=true){
+                                    $("span.errorMessage").html(res.msg);
+                                    $("div.loginErrorMessageDiv").css("visibility","visible");
+                                }
+                                else{
+                                    location.href="home";
+                                }
+                        }
+                        });
+                    }
+                }
+            });
+            var left = window.innerWidth/2+162;
+            $("div.loginSmallDiv").css("left",left);
+        })
+    </script>
+    <div id="loginDiv" style="position: relative">
+<!--        <div class="simpleLogo">-->
+<!--&lt;!&ndash;            <a th:href="${application.contextPath}"><img src="img/sucai/school_sign.jpg" width="50" ></a>&ndash;&gt;-->
+<!--&lt;!&ndash;            <a th:href="${application.contextPath}"><img src="img/site/simpleLogo.png" width=""></a>&ndash;&gt;-->
+<!--        </div>-->
+        <img id="loginBackgroundImg" class="loginBackgroundImg" src="img/sucai/damen2.jpg"  width="1200" height="600">
+<!--        <img id="loginBackgroundImg" class="loginBackgroundImg" src="img/sucai/denglubeijing.jpg"  alt="失效图片">-->
+        <div id="loginSmallDiv" class="loginSmallDiv">
+            <div class="loginErrorMessageDiv">
+                <div class="alert alert-danger" >
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"></button>
+                    <span class="errorMessage">22</span>
+                </div>
+            </div>
+
+            <div class="login_acount_text">账户登录</div>
+            <div class="loginInput " >
+					<span class="loginInputIcon ">
+						<span class=" glyphicon glyphicon-user"></span>
+					</span>
+                <input v-model="user.name" placeholder="手机/会员名/邮箱" type="text">
+            </div>
+
+            <div class="loginInput " >
+					<span class="loginInputIcon ">
+						<span class=" glyphicon glyphicon-lock"></span>
+					</span>
+                <input v-model="user.password" type="password" placeholder="密码" >
+            </div>
+            <span class="text-danger">请不要输入真实的账号密码</span><br><br>
+            <div>
+                <a class="notImplementLink" href="#nowhere">忘记账号密码</a>
+                <a href="register" class="pull-right">免费注册</a>
+            </div>
+            <div style="margin-top:20px">
+                <button class="btn btn-block redButton" type="button" @click="login">登录</button>
+            </div>
+        </div>
+    </div>
+</div>

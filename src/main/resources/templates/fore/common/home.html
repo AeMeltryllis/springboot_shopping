@@ -62,11 +62,12 @@
             el: '#workingArea',
             data: {
                 //产品集合
-                products:[]
+                categories:[]
             },
             mounted:function(){
                 this.$nextTick(
                     function () {
+                        //获取商品数据
                         vm.getProduct();
                     }
                 );
@@ -80,7 +81,7 @@
                         data:{
                         },
                         success:function (res) {
-                            vm.products = res.data.content;
+                            vm.categories = res.data.content;
                             vue.$nextTick(function(){
                                 //要等渲染结束之后，才来进行监听，否则他们都没有被创建出来，监听没有意义
                                 homePageRegisterListeners();
@@ -109,7 +110,7 @@
     <title>广东第二师范学院</title>
     <div class="homepageDiv">
 <!--        分类展示页-->
-        <div th:replace="fore/home/categoryAndcarousel::html" ></div>
+<!--        <div th:replace="fore/home/categoryAndcarousel::html" ></div>-->
 <!--        产品展示页-->
         <div th:replace="fore/home/mainShow::html" ></div>
     </div>

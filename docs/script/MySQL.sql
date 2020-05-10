@@ -89,8 +89,8 @@ CREATE TABLE order_info (
   mobile_number varchar(255) DEFAULT NULL,
   user_remark varchar(255) DEFAULT NULL COMMENT '用户备注' ,
   create_date datetime DEFAULT NULL,
-  pay_data datetime DEFAULT NULL,
-  delivery_data datetime DEFAULT NULL COMMENT '发货日期',
+  pay_date datetime DEFAULT NULL,
+  delivery_date datetime DEFAULT NULL COMMENT '发货日期',
   confirm_delivery_date datetime DEFAULT NULL COMMENT '确认收货日期',
   user_id bigint(11)  DEFAULT NULL,
   order_status varchar(255) DEFAULT NULL,
@@ -112,7 +112,9 @@ CREATE TABLE order_item (
 -- 2019/12/25 为category数据表增加逻辑删除
 
 alter table category_info ADD  COLUMN is_deleted bit(1) DEFAULT NULL COMMENT '逻辑删除标记';
-
+-- 2020/04/20 为user数据表增加逻辑删除
+alter table user_info ADD  COLUMN is_deleted bit(1) DEFAULT NULL COMMENT '逻辑删除标记';
+alter table product_info ADD  COLUMN is_deleted bit(1) DEFAULT NULL COMMENT '逻辑删除标记';
 
 
 

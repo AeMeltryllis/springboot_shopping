@@ -186,6 +186,8 @@
                     formData.append('type', "single");
                     $.ajax({
                         url: "productImage",
+                        // processData: false,//必须false才会避开jQuery对 formdata 的默认处理
+                        // contentType: false,//必须false才会自动加上正确的Content-Type
                         data: {
                             formData: formData
                         },
